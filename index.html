@@ -1,11 +1,816 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escape room</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escape Room</title>
+  <style>
+    :root {
+      --primary: #163F92;
+      --primary-2: #214fb3;
+      --bg: #f5f8ff;
+      --surface: #ffffff;
+      --text: #1b2430;
+      --muted: #667085;
+      --border: #d9e2f2;
+      --success: #1f9d55;
+      --warning: #d9a404;
+      --danger: #d64545;
+      --shadow: 0 10px 30px rgba(22, 63, 146, 0.12);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .hidden { display: none !important; }
+
+    .page {
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .home-box {
+      min-height: calc(100vh - 48px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-content {
+      max-width: 760px;
+      padding: 36px;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    .home-content h1,
+    .escape-title {
+      color: var(--primary);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--primary-2); }
+
+    .btn-secondary {
+      background: #e9eefb;
+      color: var(--primary);
+    }
+
+    .topbar {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 16px 18px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .status-legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.08);
+      display: inline-block;
+    }
+
+    .dot-default { background: #e8eef9; }
+    .dot-success { background: var(--success); }
+    .dot-warning { background: var(--warning); }
+    .dot-danger { background: var(--danger); }
+
+    .escape-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .question-nav {
+      padding: 16px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .nav-btn {
+      height: 52px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #edf2ff;
+      color: var(--primary);
+    }
+
+    .nav-btn.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(22, 63, 146, 0.12);
+    }
+
+    .nav-btn.status-default { background: #edf2ff; color: var(--primary); }
+    .nav-btn.status-success { background: var(--success); color: white; }
+    .nav-btn.status-warning { background: var(--warning); color: white; }
+    .nav-btn.status-danger { background: var(--danger); color: white; }
+
+    .question-card {
+      padding: 18px;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .question-badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #e9eefb;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .question-image-wrap {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fdfefe;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .question-image {
+      display: block;
+      max-width: 100%;
+      max-height: 70vh;
+      width: 100%;
+      object-fit: contain;
+      background: white;
+    }
+
+    .answer-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .answer-box label {
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .answer-box input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 16px;
+      outline: none;
+    }
+
+    .answer-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(22, 63, 146, 0.1);
+    }
+
+    .obs {
+      color: var(--muted);
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .feedback {
+      font-weight: bold;
+      min-height: 24px;
+    }
+
+    .feedback.success { color: var(--success); }
+    .feedback.error { color: var(--danger); }
+    .feedback.warning { color: var(--warning); }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 18, 34, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 999;
+    }
+
+    .modal {
+      width: min(900px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      padding: 22px;
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: 0;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .names-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+    }
+
+    .result-box {
+      background: #f6f8fe;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .result-box ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .escape-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .question-nav {
+        position: static;
+      }
+
+      .names-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>Você consegue sair?</h1>
+  <main>
+    <section id="homePage" class="page">
+      <div class="container home-box">
+        <div class="card home-content">
+          <h1>Golpinho kkkkkkk</h1>
+          <p>
+            Sério que vocês vão cair num golpinho safado desses?! 
+          </p>
+          <img src="imgs/vaga10k-limpa-alinhada.png" alt="">
+          <p>
+            Agora vocês vão ter que mostrar que são dignos de escapar daqui!
+          </p>
+          <button id="startBtn" class="btn btn-primary">Iniciar a redenção</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="escapePage" class="page hidden">
+      <div class="container">
+        <div class="topbar card">
+          <div>
+            <h2 class="escape-title">Desafio Escape Room</h2>
+            <div class="meta">
+              <span id="metaAcertos">Acertos: 0</span>
+              <span id="metaErros">Erros: 0</span>
+              <span id="metaPendentes">Pendentes: 0</span>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <button id="sendBtn" class="btn btn-primary">Enviar respostas</button>
+          </div>
+        </div>
+
+        <div class="status-legend">
+          <div class="legend-item"><span class="dot dot-default"></span> Não respondida</div>
+          <div class="legend-item"><span class="dot dot-success"></span> Acertada</div>
+          <div class="legend-item"><span class="dot dot-warning"></span> 1 erro</div>
+          <div class="legend-item"><span class="dot dot-danger"></span> 2 erros / bloqueada</div>
+        </div>
+
+        <div class="escape-layout">
+          <aside class="question-nav card">
+            <h3>Questões</h3>
+            <p class="obs">Você pode navegar livremente entre as questões.</p>
+            <div id="questionGrid" class="question-grid"></div>
+          </aside>
+
+          <section class="question-card card">
+            <div class="question-header">
+              <div>
+                <div id="questionBadge" class="question-badge">Questão 1</div>
+              </div>
+              <div class="meta">
+                <span id="attemptInfo">Tentativas: 0/2</span>
+                <span id="stateInfo">Status: não respondida</span>
+              </div>
+            </div>
+
+            <div class="question-image-wrap">
+              <img id="questionImage" class="question-image" src="" alt="Enigma da questão" />
+            </div>
+
+            <div class="answer-box">
+              <label for="answerInput">Sua resposta</label>
+              <input id="answerInput" type="text" autocomplete="off" />
+              <div id="obsText" class="obs"></div>
+              <div id="feedback" class="feedback"></div>
+              <div class="actions">
+                <button id="checkBtn" class="btn btn-primary">Responder</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="sendModalBackdrop" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Enviar resultados</h3>
+        <button class="close-btn" data-close="sendModalBackdrop">&times;</button>
+      </div>
+      <p>Preencham os nomes completos dos integrantes da equipe.</p>
+      <div id="namesGrid" class="names-grid"></div>
+      <div class="actions">
+        <button id="confirmSendBtn" class="btn btn-primary">Confirmar</button>
+        <button class="btn btn-secondary" data-close="sendModalBackdrop">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultModalBackdrop" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Resultado da equipe</h3>
+        <button class="close-btn" data-close="resultModalBackdrop">&times;</button>
+      </div>
+      <div id="resultContent"></div>
+      <div class="actions" style="margin-top: 14px;">
+        <button class="btn btn-primary" data-close="resultModalBackdrop">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'escape_room_progress_v2';
+
+    const questions = [
+      { id: 17, img: './imgs/b079.jpg', r: ['4:31'], obs: '' },
+      { id: 3, img: './imgs/a039.jpg', r: ['72'], obs: '' },
+      { id: 22, img: './imgs/b141.jpg', r: ['2'], obs: 'Resposta em metros' },
+      { id: 9, img: './imgs/b020.jpg', r: ['108'], obs: 'Resposta em formato decimal. Ex: "0.2" representaria 1/5 ' },
+      { id: 5, img: './imgs/a083.jpg', r: ['78'], obs: '' },
+      { id: 20, img: './imgs/b103.jpg', r: ['4'], obs: '' },
+      { id: 15, img: './imgs/b057.jpg', r: ['483'], obs: '' },
+      { id: 0, img: './imgs/a003.jpg', r: ['c'], obs: 'Digite a letra da opção' },
+      { id: 11, img: './imgs/b035.jpg', r: ['258'], obs: 'Resposta em minutos' },
+      { id: 18, img: './imgs/b084.jpg', r: ['6'], obs: '' },
+      { id: 7, img: './imgs/a138.jpg', r: ['87'], obs: '' },
+      { id: 12, img: './imgs/b036.jpg', r: ['3'], obs: '' },
+      { id: 2, img: './imgs/a008.jpg', r: ['g'], obs: 'Digite a letra da opção' },
+      { id: 14, img: './imgs/b056.jpg', r: ['92'], obs: '' },
+      { id: 4, img: './imgs/a043.jpg', r: ['5'], obs: '' },
+      { id: 21, img: './imgs/b122.jpg', r: ['93'], obs: '' },
+      { id: 19, img: './imgs/b089.jpg', r: ['33'], obs: '' },
+      { id: 16, img: './imgs/b062.jpg', r: ['2'], obs: '' },
+      { id: 10, img: './imgs/b028.jpg', r: ['3'], obs: 'Resposta em minutos' }
+    ];
+
+    const state = loadState();
+
+    const homePage = document.getElementById('homePage');
+    const escapePage = document.getElementById('escapePage');
+    const startBtn = document.getElementById('startBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const questionGrid = document.getElementById('questionGrid');
+    const questionBadge = document.getElementById('questionBadge');
+    const questionImage = document.getElementById('questionImage');
+    const answerInput = document.getElementById('answerInput');
+    const obsText = document.getElementById('obsText');
+    const feedback = document.getElementById('feedback');
+    const checkBtn = document.getElementById('checkBtn');
+    const attemptInfo = document.getElementById('attemptInfo');
+    const stateInfo = document.getElementById('stateInfo');
+    const metaAcertos = document.getElementById('metaAcertos');
+    const metaErros = document.getElementById('metaErros');
+    const metaPendentes = document.getElementById('metaPendentes');
+    const sendModalBackdrop = document.getElementById('sendModalBackdrop');
+    const resultModalBackdrop = document.getElementById('resultModalBackdrop');
+    const namesGrid = document.getElementById('namesGrid');
+    const confirmSendBtn = document.getElementById('confirmSendBtn');
+    const resultContent = document.getElementById('resultContent');
+
+    buildNameInputs();
+    renderRoute();
+    renderQuestionNav();
+    renderCurrentQuestion();
+    updateMeta();
+
+    startBtn.addEventListener('click', goToEscape);
+    sendBtn.addEventListener('click', () => openModal(sendModalBackdrop));
+    checkBtn.addEventListener('click', handleAnswer);
+
+    confirmSendBtn.addEventListener('click', handleConfirmSend);
+
+    answerInput.addEventListener('keydown', (e) => {
+      if (e.key == 'Enter') {
+        e.preventDefault();
+        handleAnswer();
+      }
+    });
+
+    window.addEventListener('hashchange', renderRoute);
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-close');
+        const backdrop = document.getElementById(id);
+        closeModal(backdrop);
+      });
+    });
+
+    [sendModalBackdrop, resultModalBackdrop].forEach(backdrop => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target == backdrop) closeModal(backdrop);
+      });
+    });
+
+    function buildNameInputs() {
+      namesGrid.innerHTML = '';
+
+      for (let i = 0; i < 10; i++) {
+        const field = document.createElement('div');
+        field.className = 'field';
+        field.innerHTML = `
+          <label for="member-${i}">Integrante ${i + 1}</label>
+          <input id="member-${i}" type="text" value="${escapeHtml(state.teamNames[i] || '')}" />
+        `;
+        namesGrid.appendChild(field);
+      }
+    }
+
+    function renderRoute() {
+      const isEscape = location.hash == '#escape';
+      homePage.classList.toggle('hidden', isEscape);
+      escapePage.classList.toggle('hidden', !isEscape);
+    }
+
+    function goToEscape() {
+      location.hash = '#escape';
+    }
+
+    function renderQuestionNav() {
+      questionGrid.innerHTML = '';
+
+      questions.forEach((question, index) => {
+        const progress = state.progress[question.id];
+        const button = document.createElement('button');
+
+        button.className = `nav-btn status-${getStatus(progress)}`;
+        if (state.currentQuestionIndex == index) button.classList.add('active');
+
+        button.textContent = index + 1;
+        button.title = `Questão ${index + 1}`;
+
+        button.addEventListener('click', () => {
+          state.currentQuestionIndex = index;
+          saveState();
+          renderQuestionNav();
+          renderCurrentQuestion();
+        });
+
+        questionGrid.appendChild(button);
+      });
+    }
+
+    function renderCurrentQuestion() {
+      const question = questions[state.currentQuestionIndex];
+      const progress = state.progress[question.id];
+      const status = getStatus(progress);
+
+      questionBadge.textContent = `Questão ${state.currentQuestionIndex + 1}`;
+      questionImage.src = question.img;
+      questionImage.alt = `Imagem da questão ${state.currentQuestionIndex + 1}`;
+      obsText.textContent = question.obs || '';
+
+      answerInput.value = '';
+      answerInput.disabled = progress.solved || progress.wrongAttempts >= 2;
+      checkBtn.disabled = progress.solved || progress.wrongAttempts >= 2;
+
+      attemptInfo.textContent = `Tentativas: ${progress.wrongAttempts}/2`;
+      stateInfo.textContent = `Status: ${statusLabel(status)}`;
+
+      feedback.className = 'feedback';
+
+      if (progress.solved) {
+        feedback.textContent = 'Resposta correta.';
+        feedback.classList.add('success');
+      } else if (progress.wrongAttempts >= 2) {
+        feedback.textContent = 'Questão bloqueada após duas tentativas incorretas.';
+        feedback.classList.add('error');
+      } else if (progress.wrongAttempts == 1) {
+        feedback.textContent = 'Resposta incorreta. Você ainda tem mais uma tentativa.';
+        feedback.classList.add('warning');
+      } else {
+        feedback.textContent = '';
+      }
+    }
+
+    function handleAnswer() {
+      const originalInputValue = answerInput.value;
+      answerInput.value = '';
+
+      const question = questions[state.currentQuestionIndex];
+      const progress = state.progress[question.id];
+
+      if (progress.solved || progress.wrongAttempts >= 2) return;
+
+      const input = normalizar(originalInputValue);
+
+      if (!input) {
+        feedback.textContent = 'Digite uma resposta antes de enviar.';
+        feedback.className = 'feedback warning';
+        return;
+      }
+
+      const encoded = encode(input);
+      const correct = question.r.includes(encoded);
+
+      if (correct) {
+        progress.solved = true;
+        feedback.textContent = 'Resposta correta.';
+        feedback.className = 'feedback success';
+      } else {
+        progress.wrongAttempts += 1;
+        feedback.textContent = progress.wrongAttempts >= 2
+          ? 'Resposta incorreta. Questão bloqueada após duas tentativas.'
+          : 'Resposta incorreta.';
+        feedback.className = progress.wrongAttempts >= 2 ? 'feedback error' : 'feedback warning';
+      }
+
+      saveState();
+      renderQuestionNav();
+      renderCurrentQuestion();
+      updateMeta();
+    }
+
+    function handleConfirmSend() {
+      const inputs = [...namesGrid.querySelectorAll('input')];
+      state.teamNames = inputs.map(input => input.value.trim());
+      saveState();
+      closeModal(sendModalBackdrop);
+      showResultsModal();
+    }
+
+    function showResultsModal() {
+      const summary = getSummary();
+      const teamNames = state.teamNames.filter(Boolean);
+
+      resultContent.innerHTML = `
+        <p><strong>Instrução:</strong> façam uma foto desta tela e enviem para <strong>rafaelld@edu.sc.senai.br</strong>.</p>
+        <div class="result-box">
+          <p><strong>Acertos:</strong> ${summary.correct}</p>
+          <p><strong>Erros:</strong> ${summary.errors}</p>
+          <p><strong>Não respondidas:</strong> ${summary.pending}</p>
+          <p><strong>Integrantes:</strong></p>
+          ${teamNames.length
+            ? `<ul>${teamNames.map(name => `<li>${escapeHtml(name)}</li>`).join('')}</ul>`
+            : '<p>Nenhum nome informado.</p>'}
+        </div>
+      `;
+
+      openModal(resultModalBackdrop);
+    }
+
+    function updateMeta() {
+      const summary = getSummary();
+      metaAcertos.textContent = `Acertos: ${summary.correct}`;
+      metaErros.textContent = `Erros: ${summary.errors}`;
+      metaPendentes.textContent = `Pendentes: ${summary.pending}`;
+    }
+
+    function getSummary() {
+      let correct = 0;
+      let errors = 0;
+      let pending = 0;
+
+      questions.forEach(question => {
+        const progress = state.progress[question.id];
+
+        if (progress.solved) correct++;
+        else if (progress.wrongAttempts >= 2) errors++;
+        else pending++;
+      });
+
+      return { correct, errors, pending };
+    }
+
+    function getStatus(progress) {
+      if (progress.solved) return 'success';
+      if (progress.wrongAttempts >= 2) return 'danger';
+      if (progress.wrongAttempts == 1) return 'warning';
+      return 'default';
+    }
+
+    function statusLabel(status) {
+      if (status == 'success') return 'acertada';
+      if (status == 'warning') return '1 erro';
+      if (status == 'danger') return 'bloqueada';
+      return 'não respondida';
+    }
+
+    function encode(str) {
+      return str
+        .split('')
+        .map((char, index) => String.fromCharCode(char.charCodeAt(0) + (index % 3 + 1)))
+        .join('');
+    }
+
+    function normalizar(str) {
+      return String(str)
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function openModal(backdrop) {
+      backdrop.classList.remove('hidden');
+    }
+
+    function closeModal(backdrop) {
+      backdrop.classList.add('hidden');
+    }
+
+    function loadState() {
+      const base = {
+        currentQuestionIndex: 0,
+        teamNames: Array(10).fill(''),
+        progress: {}
+      };
+
+      questions.forEach(question => {
+        base.progress[question.id] = {
+          solved: false,
+          wrongAttempts: 0
+        };
+      });
+
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!saved) return base;
+
+        const merged = {
+          currentQuestionIndex: Number.isInteger(saved.currentQuestionIndex) ? saved.currentQuestionIndex : 0,
+          teamNames: Array.isArray(saved.teamNames)
+            ? [...Array(10)].map((_, i) => saved.teamNames[i] || '')
+            : Array(10).fill(''),
+          progress: { ...base.progress }
+        };
+
+        if (saved.progress) {
+          questions.forEach(question => {
+            const old = saved.progress[question.id] || {};
+            merged.progress[question.id] = {
+              solved: !!old.solved,
+              wrongAttempts: Math.max(0, Math.min(2, Number(old.wrongAttempts) || 0))
+            };
+          });
+        }
+
+        merged.currentQuestionIndex = Math.max(
+          0,
+          Math.min(questions.length - 1, merged.currentQuestionIndex)
+        );
+
+        return merged;
+      } catch {
+        return base;
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+  </script>
 </body>
 </html>
